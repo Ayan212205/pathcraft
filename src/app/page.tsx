@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { RoadmapCanvas } from "@/components/roadmap/RoadmapCanvas";
 import { ResumeScannerModal } from "@/components/roadmap/ResumeScannerModal";
 import { RoleComparisonModal } from "@/components/roadmap/RoleComparisonModal";
+import { RoadmapCompletionModal } from "@/components/roadmap/RoadmapCompletionModal";
 import { sampleRoadmaps } from "@/lib/mock-data";
 import { RoadmapGraph, RoadmapNodeData } from "@/types/roadmap";
 import {
@@ -20,6 +21,7 @@ import {
   ShieldCheck,
   AlertCircle,
   GitCompare,
+  PartyPopper,
 } from "lucide-react";
 
 export default function Home() {
@@ -29,6 +31,8 @@ export default function Home() {
   const [graph, setGraph] = useState<RoadmapGraph>(sampleRoadmaps["climate-tech"]);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+  const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Compute live statistics
@@ -56,9 +60,18 @@ export default function Home() {
     };
   }, [graph, weeklyHours]);
 
+  // Trigger celebration modal when user masters all roadmap milestones
+  React.useEffect(() => {
+    if (stats.progressPercent === 100 && !hasShownCompletionModal && stats.totalNodes > 0) {
+      setIsCompletionModalOpen(true);
+      setHasShownCompletionModal(true);
+    }
+  }, [stats.progressPercent, stats.totalNodes, hasShownCompletionModal]);
+
   const handleGenerate = async (target: string = roleInput) => {
     if (!target.trim()) return;
     setLoading(true);
+    setHasShownCompletionModal(false);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -241,7 +254,18 @@ export default function Home() {
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-xs text-slate-400 font-medium">Mastery Progress</div>
+              <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                Mastery Progress
+                {stats.progressPercent === 100 && (
+                  <button
+                    onClick={() => setIsCompletionModalOpen(true)}
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 transition-colors font-bold flex items-center gap-1 animate-pulse"
+                  >
+                    <PartyPopper className="w-3 h-3" />
+                    Mastered!
+                  </button>
+                )}
+              </div>
               <div className="text-lg font-bold text-white flex items-baseline gap-2">
                 {stats.progressPercent}%
                 <span className="text-xs font-normal text-slate-400">
@@ -358,6 +382,27 @@ export default function Home() {
         isOpen={isCompareModalOpen}
         onClose={() => setIsCompareModalOpen(false)}
         currentRole={graph.metadata.targetRole}
+      />
+
+      {/* Roadmap Completion Celebration Modal */}
+      <RoadmapCompletionModal
+        isOpen={isCompletionModalOpen}
+        onClose={() => setIsCompletionModalOpen(false)}
+        targetRole={graph.metadata.targetRole}
+        totalHours={graph.nodes.reduce((sum, n) => sum + n.estimatedHours, 0)}
+        onCompareRoles={() => setIsCompareModalOpen(true)}
+        onExportPng={() => {
+          const exportBtn = document.querySelector(".react-flow__viewport") as HTMLElement;
+          if (exportBtn) {
+            const btn = document.querySelector('button:has(svg.lucide-camera)') as HTMLButtonElement;
+            if (btn) btn.click();
+          }
+        }}
+        onExploreNewRole={() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+          if (searchInput) searchInput.focus();
+        }}
       />
     </main>
   );
