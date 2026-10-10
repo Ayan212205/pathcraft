@@ -47,7 +47,8 @@ export default function Home() {
     resetToDefault,
   } = useRoadmap();
 
-  const [roleInput, setRoleInput] = useState(targetRole);
+  const [hasUserCustomized, setHasUserCustomized] = useState(false);
+  const [roleInput, setRoleInput] = useState("");
   const [knownSkillsInput, setKnownSkillsInput] = useState<string>("");
   const [showPersonalization, setShowPersonalization] = useState<boolean>(false);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
@@ -55,9 +56,15 @@ export default function Home() {
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Sync roleInput when targetRole changes in context
+  // Check if user previously searched or customized
   useEffect(() => {
-    setRoleInput(targetRole);
+    if (typeof window !== "undefined") {
+      const savedSearched = localStorage.getItem("pathcraft_has_searched");
+      if (savedSearched === "true") {
+        setHasUserCustomized(true);
+        setRoleInput(targetRole);
+      }
+    }
   }, [targetRole]);
 
   // Trigger celebration modal when user reaches 100% mastery
@@ -70,18 +77,31 @@ export default function Home() {
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!roleInput.trim()) return;
+    const query = roleInput.trim();
+    if (!query) {
+      setError("Please type a target job (e.g. Java Developer, Cyber Security, DevOps) to generate your roadmap.");
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pathcraft_has_searched", "true");
+    }
+    setHasUserCustomized(true);
 
     const knownSkillsArray = knownSkillsInput
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
 
-    await generateRoadmap(roleInput.trim(), weeklyHours, experienceLevel, knownSkillsArray);
+    await generateRoadmap(query, weeklyHours, experienceLevel, knownSkillsArray);
   };
 
   const handlePresetSelect = async (presetRole: string, presetKey: string) => {
     setRoleInput(presetRole);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pathcraft_has_searched", "true");
+    }
+    setHasUserCustomized(true);
     resetToDefault(presetKey);
   };
 
@@ -306,6 +326,16 @@ export default function Home() {
           <div>
             <div className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
               Mastery Progress
+              {stats.completedNodes === 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-semibold">
+                  Not Started
+                </span>
+              )}
+              {stats.completedNodes > 0 && stats.progressPercent < 100 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                  In Progress
+                </span>
+              )}
               {stats.progressPercent === 100 && (
                 <button
                   onClick={() => setIsCompletionModalOpen(true)}
@@ -331,15 +361,37 @@ export default function Home() {
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs text-slate-400 font-medium">Est. Completion</div>
-            <div className="text-lg font-bold text-white">
-              ~{stats.calculatedWeeks} Weeks
-              <span className="text-xs font-normal text-slate-400 ml-1.5">
-                ({stats.remainingHours}h left)
-              </span>
+            <div className="text-xs text-slate-400 font-medium">
+              {stats.completedNodes === 0
+                ? "Est. Program Duration"
+                : stats.progressPercent === 100
+                ? "Program Status"
+                : "Est. Completion"}
             </div>
-            <div className="text-[11px] text-cyan-400 font-semibold flex items-center gap-1 mt-0.5">
-              <span>Target: {targetCompletionDate}</span>
+            <div className="text-lg font-bold text-white">
+              {stats.progressPercent === 100 ? (
+                "Completed 🎉"
+              ) : (
+                <>
+                  ~{stats.calculatedWeeks} Weeks
+                  <span className="text-xs font-normal text-slate-400 ml-1.5">
+                    {stats.completedNodes === 0
+                      ? `(${stats.remainingHours}h curriculum)`
+                      : `(${stats.remainingHours}h left)`}
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="text-[11px] font-semibold flex items-center gap-1 mt-0.5">
+              {stats.completedNodes === 0 ? (
+                <span className="text-amber-400/90 font-medium">
+                  Status: Not Started • (e.g. {targetCompletionDate} if started today)
+                </span>
+              ) : stats.progressPercent === 100 ? (
+                <span className="text-emerald-400">All Milestones Achieved!</span>
+              ) : (
+                <span className="text-cyan-400">Target Finish: {targetCompletionDate}</span>
+              )}
             </div>
           </div>
         </div>
@@ -404,6 +456,15 @@ export default function Home() {
       <div className="px-5 py-3.5 rounded-xl bg-gradient-to-r from-indigo-950/30 via-slate-900 to-cyan-950/20 border border-indigo-500/30 flex flex-wrap items-center justify-between gap-4 text-xs shadow-lg">
         <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
+            {!hasUserCustomized ? (
+              <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider">
+                Sample Track Preview (Not Started)
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider">
+                Active Career Track
+              </span>
+            )}
             <span className="font-bold text-indigo-300 uppercase tracking-wider text-[11px]">
               Target: {graph.metadata.targetRole}
             </span>
@@ -426,6 +487,21 @@ export default function Home() {
           <p className="text-slate-400 mt-0.5 max-w-md">{graph.metadata.whyThisPath}</p>
         </div>
       </div>
+
+      {/* Program Not Started Onboarding Banner */}
+      {stats.completedNodes === 0 && (
+        <div className="px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0" />
+            <span>
+              <strong>Curriculum Not Started Yet:</strong> Click the first active milestone (in cyan) below to start learning or mark it mastered to begin tracking live completion progress!
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-400 shrink-0">
+            Total curriculum workload: ~{stats.calculatedWeeks} weeks at {weeklyHours}h/wk
+          </span>
+        </div>
+      )}
 
       {/* Dynamic Rerouting Feedback Alert */}
       {stats.completedNodes > 0 && (
