@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { RoadmapCanvas } from "@/components/roadmap/RoadmapCanvas";
 import { ResumeScannerModal } from "@/components/roadmap/ResumeScannerModal";
+import { RoleComparisonModal } from "@/components/roadmap/RoleComparisonModal";
 import { sampleRoadmaps } from "@/lib/mock-data";
 import { RoadmapGraph, RoadmapNodeData } from "@/types/roadmap";
 import {
@@ -18,6 +19,7 @@ import {
   ArrowRight,
   ShieldCheck,
   AlertCircle,
+  GitCompare,
 } from "lucide-react";
 
 export default function Home() {
@@ -26,6 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [graph, setGraph] = useState<RoadmapGraph>(sampleRoadmaps["climate-tech"]);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Compute live statistics
@@ -285,10 +288,17 @@ export default function Home() {
           </div>
 
           {/* Innovation Action Buttons */}
-          <div className="flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-2 justify-end flex-wrap">
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <GitCompare className="w-3.5 h-3.5 text-purple-400" />
+              Compare Roles
+            </button>
             <button
               onClick={() => setIsResumeModalOpen(true)}
-              className="flex-1 md:flex-initial px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
             >
               <FileText className="w-3.5 h-3.5 text-indigo-400" />
               Resume Delta
@@ -341,6 +351,13 @@ export default function Home() {
         onClose={() => setIsResumeModalOpen(false)}
         graph={graph}
         onApplySkills={handleApplyResumeSkills}
+      />
+
+      {/* Role Comparison Modal */}
+      <RoleComparisonModal
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        currentRole={graph.metadata.targetRole}
       />
     </main>
   );
