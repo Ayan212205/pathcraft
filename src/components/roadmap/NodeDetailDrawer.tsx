@@ -29,6 +29,7 @@ export const NodeDetailDrawer: React.FC<NodeDetailDrawerProps> = ({
   onToggleComplete,
 }) => {
   const [openQuestionIndex, setOpenQuestionIndex] = useState<number | null>(0);
+  const [evaluationScores, setEvaluationScores] = useState<Record<number, "practicing" | "mastered">>({});
 
   if (!node) return null;
 
@@ -158,13 +159,21 @@ export const NodeDetailDrawer: React.FC<NodeDetailDrawerProps> = ({
         {/* Interview Simulation Questions */}
         {node.actionable.interviewQuestions.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-              <HelpCircle className="w-4 h-4 text-emerald-400" />
-              High-Frequency Interview Drills
-            </h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4 text-emerald-400" />
+                High-Frequency Interview Drills
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                {Object.values(evaluationScores).filter((s) => s === "mastered").length} /{" "}
+                {node.actionable.interviewQuestions.length} Mastered
+              </span>
+            </div>
+
             <div className="space-y-2">
               {node.actionable.interviewQuestions.map((qa, idx) => {
                 const isOpen = openQuestionIndex === idx;
+                const currentScore = evaluationScores[idx];
                 return (
                   <div
                     key={idx}
@@ -174,7 +183,14 @@ export const NodeDetailDrawer: React.FC<NodeDetailDrawerProps> = ({
                       onClick={() => setOpenQuestionIndex(isOpen ? null : idx)}
                       className="w-full text-left p-3 flex items-center justify-between gap-3 text-xs font-medium text-slate-200 hover:text-white transition-colors"
                     >
-                      <span>{qa.question}</span>
+                      <span className="flex items-center gap-2">
+                        {currentScore === "mastered" ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        ) : (
+                          <span className="w-3.5 h-3.5 rounded-full border border-slate-600 inline-block shrink-0" />
+                        )}
+                        {qa.question}
+                      </span>
                       {isOpen ? (
                         <ChevronUp className="w-4 h-4 shrink-0 text-slate-400" />
                       ) : (
@@ -182,11 +198,50 @@ export const NodeDetailDrawer: React.FC<NodeDetailDrawerProps> = ({
                       )}
                     </button>
                     {isOpen && (
-                      <div className="p-3 pt-0 text-xs text-slate-400 border-t border-slate-800/50 bg-slate-950/40">
-                        <span className="font-semibold text-emerald-400 block mb-1">
-                          Model Answer Strategy:
-                        </span>
-                        {qa.idealAnswer}
+                      <div className="p-3 pt-0 text-xs text-slate-400 border-t border-slate-800/50 bg-slate-950/40 space-y-2.5">
+                        <div>
+                          <span className="font-semibold text-emerald-400 block mb-1">
+                            Model Answer Strategy:
+                          </span>
+                          {qa.idealAnswer}
+                        </div>
+
+                        {/* Self-Rating Controls */}
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-[11px]">
+                          <span className="text-slate-500 font-medium">Self-Evaluate:</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() =>
+                                setEvaluationScores((prev) => ({
+                                  ...prev,
+                                  [idx]: "practicing",
+                                }))
+                              }
+                              className={`px-2.5 py-1 rounded-md transition-colors ${
+                                currentScore === "practicing"
+                                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                                  : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                              }`}
+                            >
+                              Needs Practice
+                            </button>
+                            <button
+                              onClick={() =>
+                                setEvaluationScores((prev) => ({
+                                  ...prev,
+                                  [idx]: "mastered",
+                                }))
+                              }
+                              className={`px-2.5 py-1 rounded-md transition-colors ${
+                                currentScore === "mastered"
+                                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                                  : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                              }`}
+                            >
+                              ✓ Mastered
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
