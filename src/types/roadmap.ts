@@ -71,6 +71,7 @@ export interface RoadmapMetadata {
     experienceLevel: string;
     knownSkills: string[];
   };
+  generationMode?: "gemini-live" | "synthesized-fallback";
 }
 
 export interface RoadmapGraph {

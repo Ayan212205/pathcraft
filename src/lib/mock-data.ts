@@ -8,7 +8,8 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
       weeklyCommitment: 12,
       totalEstimatedWeeks: 14,
       roleOverview: "Design secure network perimeters, conduct automated vulnerability assessments, and implement Zero-Trust threat containment pipelines.",
-      whyThisPath: "Entry-level candidates often only learn tools like Wireshark without understanding Linux packet filtering (eBPF/iptables), OWASP remediation, or cloud IAM architectures."
+      whyThisPath: "Entry-level candidates often only learn tools like Wireshark without understanding Linux packet filtering (eBPF/iptables), OWASP remediation, or cloud IAM architectures.",
+      generationMode: "synthesized-fallback"
     },
     nodes: [
       {
@@ -231,7 +232,8 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
       weeklyCommitment: 12,
       totalEstimatedWeeks: 16,
       roleOverview: "Build high-throughput time-series dashboards for solar/wind microgrids, carbon accounting APIs, and IoT sensor telemetry pipelines.",
-      whyThisPath: "Traditional web dev teaches CRUD apps. Climate tech requires streaming time-series data, geospatial map visualizations, and carbon calculation standards (GHG Protocol)."
+      whyThisPath: "Traditional web dev teaches CRUD apps. Climate tech requires streaming time-series data, geospatial map visualizations, and carbon calculation standards (GHG Protocol).",
+      generationMode: "synthesized-fallback"
     },
     nodes: [
       {
@@ -447,7 +449,8 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
       weeklyCommitment: 15,
       totalEstimatedWeeks: 14,
       roleOverview: "Design, build, and deploy multi-agent systems with tool-calling capabilities, memory persistence, human-in-the-loop validation, and latency optimization.",
-      whyThisPath: "Basic tutorials only teach simple prompt wrappers. True agent engineering requires deterministic state machines, vector search with re-ranking, and evals."
+      whyThisPath: "Basic tutorials only teach simple prompt wrappers. True agent engineering requires deterministic state machines, vector search with re-ranking, and evals.",
+      generationMode: "synthesized-fallback"
     },
     nodes: [
       {
