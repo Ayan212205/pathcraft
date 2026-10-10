@@ -57,22 +57,24 @@ As of the final submission deadline:
   - `⚡ Resilient Synthesized Mode (Offline Verified)` (when in fallback mode or evaluated without an external API key)
 - **Zero-Crash Table Judging**: Guarantees fast, responsive generation even under degraded college Wi-Fi or API rate limits.
 
-### 6. AI ATS Resume Auditor & Role Alignment Meter
-- Upload full resumes (.pdf, .docx, .txt) or paste raw text.
-- Computes an objective **ATS Compatibility Score (0-100)**, extracts detected matching keywords, highlights critical missing skills, and runs an interactive **Bullet Point Rewrite Lab** to transform passive descriptions into impact-driven metrics.
-- **1-Click Roadmap Mapping**: Missing keywords can be mapped directly onto the visual skill tree to highlight immediate learning priorities.
+### 6. Dedicated Task Workspaces (Clean, Uncrowded UX)
+To eliminate UI clutter and modal fatigue, PathCraft provides dedicated interactive workspaces connected through a unified top navigation bar:
+- **🧭 Skill Canvas (`/`)**: High-performance React Flow v12 DAG tree, interactive node detail drawer, pace calculator, and PNG snapshot export.
+- **📄 ATS Auditor (`/ats-auditor`)**: Full AI Resume Auditor with radial ATS score gauge, detected vs missing keyword matrix, STAR bullet rewrite lab, and 1-click canvas sync.
+- **📅 Weekly Plan (`/weekly-plan`)**: Adaptive Sprint Calendar with week-by-week cards, daily learning checklists (Mon-Sat), and Sunday milestone verification deliverables.
+- **📊 Skill Gap (`/skill-gap`)**: Competency matrix with 3-column interactive breakdown (Mastered, Active, Locked) with live bidirectional status synchronization.
+- **🔀 Compare Roles (`/compare`)**: Side-by-side career pivot feasibility analysis showing the 65%+ shared foundational engineering DNA.
 
-### 7. Personalized Weekly Action Plan Generator
-- Converts long-term career goals into realistic weekly sprints.
-- Calibrated by candidate experience level (Student, Self-Taught, Junior Engineer, Career Switcher), weekly hours, and target deadline.
-- Generates structured day-by-day learning tasks and Sunday milestone portfolio deliverables.
+### 7. P0 LocalStorage Persistence (Demo & Refresh Safe)
+- All progress, active roadmaps, completed nodes, and weekly pace settings automatically persist to `localStorage`.
+- Evaluators can refresh the browser (`F5`), navigate across pages, or close the tab without losing their state.
+- A **Reset Demo** button in the header enables judges to wipe progress back to 0% to test fresh onboarding.
 
-### 8. Interactive Skill-Gap Analyzer
-- Categorizes all role competencies into **Mastered**, **In-Progress**, and **Missing**.
-- Interactive checkboxes provide bidirectional synchronization with the React Flow canvas.
-
-### 9. "Fork in the Road" Dual-Role Comparison
-- Side-by-side analysis of two target roles, discovering the 60%+ shared foundational overlap to eliminate career pivot anxiety.
+### 8. Topological Prerequisite Consistency Engine
+- Mathematical validation via [`src/lib/graph-validator.ts`](file:///d:/Azisly/src/lib/graph-validator.ts) guarantees:
+  - Downstream milestones ONLY unlock when 100% of their prerequisites are cleared.
+  - Toggling an upstream milestone back to uncompleted immediately re-locks all dependent downstream steps.
+  - Graph cycles are automatically prevented, guaranteeing valid DAG topologies.
 
 ### 10. 1-Click High-Res PNG Export & 100% Mastery Honors
 - Instant high-resolution canvas snapshot export (`html-to-image`) for resumes and portfolios.
