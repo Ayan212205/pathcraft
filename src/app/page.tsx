@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { RoadmapCanvas } from "@/components/roadmap/RoadmapCanvas";
 import { ResumeScannerModal } from "@/components/roadmap/ResumeScannerModal";
 import { RoleComparisonModal } from "@/components/roadmap/RoleComparisonModal";
@@ -31,10 +31,13 @@ import {
 } from "lucide-react";
 
 export default function Home() {
-  const [roleInput, setRoleInput] = useState("Full Stack Developer at a Climate Tech Startup");
+  const [roleInput, setRoleInput] = useState("Cyber Security Engineer");
   const [weeklyHours, setWeeklyHours] = useState<number>(12);
+  const [experienceLevel, setExperienceLevel] = useState<string>("Student / Beginner");
+  const [knownSkillsInput, setKnownSkillsInput] = useState<string>("");
+  const [showPersonalization, setShowPersonalization] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
-  const [graph, setGraph] = useState<RoadmapGraph>(sampleRoadmaps["climate-tech"]);
+  const [graph, setGraph] = useState<RoadmapGraph>(sampleRoadmaps["cyber-security"]);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
@@ -69,6 +72,21 @@ export default function Home() {
     };
   }, [graph, weeklyHours]);
 
+  // Priority 3: Realistic timeline calculator - exact target date
+  const [targetCompletionDate, setTargetCompletionDate] = useState<string>("Calculating...");
+
+  useEffect(() => {
+    if (stats.calculatedWeeks === 0) {
+      setTargetCompletionDate("Target Reached!");
+      return;
+    }
+    const date = new Date();
+    date.setDate(date.getDate() + stats.calculatedWeeks * 7);
+    setTargetCompletionDate(
+      date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    );
+  }, [stats.calculatedWeeks]);
+
   // Trigger celebration modal when user masters all roadmap milestones
   React.useEffect(() => {
     if (stats.progressPercent === 100 && !hasShownCompletionModal && stats.totalNodes > 0) {
@@ -81,11 +99,22 @@ export default function Home() {
     if (!target.trim()) return;
     setLoading(true);
     setHasShownCompletionModal(false);
+
+    const knownSkillsArray = knownSkillsInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetRole: target, weeklyHours }),
+        body: JSON.stringify({
+          targetRole: target,
+          weeklyHours,
+          experienceLevel,
+          knownSkills: knownSkillsArray,
+        }),
       });
       if (res.ok) {
         const data: RoadmapGraph = await res.json();
@@ -195,9 +224,22 @@ export default function Home() {
               type="text"
               value={roleInput}
               onChange={(e) => setRoleInput(e.target.value)}
-              placeholder="e.g. Full Stack Developer at a Climate Tech Startup, AI Agent Engineer..."
+              placeholder="e.g. Cyber Security Engineer, Climate Tech Dev, AI Agent Engineer..."
               className="flex-1 bg-transparent border-none text-sm text-white placeholder-slate-500 focus:outline-none px-2"
             />
+            <button
+              type="button"
+              onClick={() => setShowPersonalization((prev) => !prev)}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 border ${
+                showPersonalization
+                  ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
+                  : "bg-slate-800 text-slate-400 hover:text-white border-slate-700"
+              }`}
+              title="Personalize roadmap before generation"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Personalize</span>
+            </button>
             <button
               type="submit"
               disabled={loading}
@@ -217,11 +259,89 @@ export default function Home() {
             </button>
           </form>
 
+          {/* Priority 5: Personalization before generation box */}
+          {showPersonalization && (
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-indigo-500/30 text-xs space-y-3 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-indigo-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  Personalize Your Baseline (3 Quick Questions)
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Customizes starting nodes & bypasses what you already know
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. Experience Level */}
+                <div className="space-y-1">
+                  <label className="text-slate-400 font-medium text-[11px]">
+                    1. Current Experience Level:
+                  </label>
+                  <select
+                    value={experienceLevel}
+                    onChange={(e) => setExperienceLevel(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="Student / Beginner">Student / Beginner (Building foundations)</option>
+                    <option value="Self-Taught">Self-Taught (Some projects built)</option>
+                    <option value="Junior Engineer (1-2 yrs)">Junior Engineer (1-2 yrs experience)</option>
+                    <option value="Career Switcher">Career Switcher from another domain</option>
+                  </select>
+                </div>
+
+                {/* 2. Known Skills to Fast-Track */}
+                <div className="space-y-1">
+                  <label className="text-slate-400 font-medium text-[11px]">
+                    2. Skills You Already Know (Bypassed from Path):
+                  </label>
+                  <input
+                    type="text"
+                    value={knownSkillsInput}
+                    onChange={(e) => setKnownSkillsInput(e.target.value)}
+                    placeholder="e.g. Python, Linux, Git, SQL"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Preset Tags for known skills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px]">
+                <span className="text-slate-500 text-[10px] uppercase font-semibold">Quick add:</span>
+                {["Python", "Linux", "Git", "SQL", "Networking", "TypeScript"].map((skill) => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() => {
+                      if (!knownSkillsInput.toLowerCase().includes(skill.toLowerCase())) {
+                        setKnownSkillsInput((prev) => (prev ? `${prev}, ${skill}` : skill));
+                      }
+                    }}
+                    className="px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 hover:border-indigo-500/50 text-slate-400 hover:text-indigo-300 transition-colors"
+                  >
+                    + {skill}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quick Starter Chips */}
           <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
             <span className="text-slate-500 text-[11px] uppercase tracking-wider font-semibold">
               Try Targets:
             </span>
+            <button
+              onClick={() =>
+                handlePresetClick(
+                  "Cyber Security Engineer",
+                  "cyber-security"
+                )
+              }
+              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-300 transition-all text-xs"
+            >
+              🛡️ Cyber Security Engineer
+            </button>
             <button
               onClick={() =>
                 handlePresetClick(
@@ -237,7 +357,7 @@ export default function Home() {
               onClick={() =>
                 handlePresetClick("Autonomous AI Agent Engineer", "ai-agents")
               }
-              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-300 transition-all text-xs"
+              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-purple-500/40 text-slate-300 hover:text-purple-300 transition-all text-xs"
             >
               🤖 Autonomous AI Agent Engineer
             </button>
@@ -248,7 +368,7 @@ export default function Home() {
                   "fintech-designer"
                 )
               }
-              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-purple-500/40 text-slate-300 hover:text-purple-300 transition-all text-xs"
+              className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 transition-all text-xs"
             >
               💳 Fintech UI/UX Specialist
             </button>
@@ -294,8 +414,11 @@ export default function Home() {
               <div className="text-lg font-bold text-white">
                 ~{stats.calculatedWeeks} Weeks
                 <span className="text-xs font-normal text-slate-400 ml-1.5">
-                  ({stats.remainingHours}h remaining)
+                  ({stats.remainingHours}h left)
                 </span>
+              </div>
+              <div className="text-[11px] text-cyan-400 font-semibold flex items-center gap-1 mt-0.5">
+                <span>Target: {targetCompletionDate}</span>
               </div>
             </div>
           </div>
@@ -318,6 +441,9 @@ export default function Home() {
               onChange={(e) => setWeeklyHours(Number(e.target.value))}
               className="w-full accent-indigo-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
             />
+            <div className="text-[10px] text-slate-500 text-right">
+              Drag pace to recalculate completion date
+            </div>
           </div>
 
           {/* Innovation Action Buttons */}
@@ -382,6 +508,21 @@ export default function Home() {
             <p className="text-slate-400 mt-0.5 max-w-md">{graph.metadata.whyThisPath}</p>
           </div>
         </div>
+
+        {/* Priority 1: Dynamic Rerouting Feedback Alert */}
+        {stats.completedNodes > 0 && (
+          <div className="px-4 py-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-300 flex items-center justify-between gap-3 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>
+                <strong>Dynamic Reroute Active:</strong> {stats.completedNodes} milestone(s) mastered. Downstream paths automatically unlocked and timeline recalculated!
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold text-emerald-400 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 hidden sm:inline-block">
+              {stats.completedNodes * 25}h generic coursework saved
+            </span>
+          </div>
+        )}
 
         {/* Core Visualisation: Interactive Skill Canvas */}
         <div className="space-y-2">

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RoadmapGraph } from "@/types/roadmap";
+import { RoadmapGraph, RoadmapNodeData } from "@/types/roadmap";
 import { sampleRoadmaps } from "@/lib/mock-data";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { targetRole, weeklyHours = 12 } = body;
+    const {
+      targetRole,
+      weeklyHours = 12,
+      experienceLevel = "Intermediate",
+      knownSkills = [],
+    } = body;
 
     if (!targetRole || typeof targetRole !== "string" || targetRole.trim().length === 0) {
       return NextResponse.json(
@@ -16,55 +21,123 @@ export async function POST(req: NextRequest) {
 
     const cleanRole = targetRole.trim().toLowerCase();
 
+    // Helper to apply known skills (Priority 5 Personalization)
+    const applyKnownSkills = (graph: RoadmapGraph): RoadmapGraph => {
+      if (!Array.isArray(knownSkills) || knownSkills.length === 0) {
+        return graph;
+      }
+
+      const lowerKnown = knownSkills.map((s: string) => s.toLowerCase().trim()).filter(Boolean);
+      if (lowerKnown.length === 0) return graph;
+
+      const updatedNodes = graph.nodes.map((node) => {
+        const text = `${node.title} ${node.summary} ${node.actionable.skillsLearned.join(" ")}`.toLowerCase();
+        const matches = lowerKnown.some((k) => text.includes(k));
+        if (matches) {
+          return { ...node, status: "completed" as RoadmapNodeData["status"] };
+        }
+        return node;
+      });
+
+      // Recalculate downstream unlocking
+      const completedIds = new Set(
+        updatedNodes.filter((n) => n.status === "completed").map((n) => n.id)
+      );
+
+      const recalibratedNodes = updatedNodes.map((node) => {
+        if (node.status === "completed") return node;
+        const allPrereqsDone =
+          node.prerequisites.length === 0 ||
+          node.prerequisites.every((prereqId) => completedIds.has(prereqId));
+
+        return {
+          ...node,
+          status: (allPrereqsDone ? "unlocked" : "locked") as RoadmapNodeData["status"],
+        };
+      });
+
+      return {
+        ...graph,
+        metadata: {
+          ...graph.metadata,
+          candidateProfile: {
+            experienceLevel,
+            knownSkills,
+          },
+        },
+        nodes: recalibratedNodes,
+      };
+    };
+
     // Fast-path match for sample queries if offline or for lightning-fast demo
-    if (cleanRole.includes("climate")) {
-      return NextResponse.json(sampleRoadmaps["climate-tech"]);
+    if (cleanRole.includes("cyber") || cleanRole.includes("security") || cleanRole.includes("penetration")) {
+      return NextResponse.json(applyKnownSkills(sampleRoadmaps["cyber-security"]));
+    }
+    if (cleanRole.includes("climate") || cleanRole.includes("green")) {
+      return NextResponse.json(applyKnownSkills(sampleRoadmaps["climate-tech"]));
     }
     if (cleanRole.includes("agent") || cleanRole.includes("autonomous")) {
-      return NextResponse.json(sampleRoadmaps["ai-agents"]);
+      return NextResponse.json(applyKnownSkills(sampleRoadmaps["ai-agents"]));
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // If no API key is provided, use our intelligent parametric synthesis based on role
-    if (!apiKey || apiKey === "your_gemini_api_key_here") {
-      // Return a dynamically tailored fallback so it never breaks for the user
-      const synthesized: RoadmapGraph = {
+    // Parametric synthesis fallback when API key is not configured
+    const generateSynthesized = (): RoadmapGraph => {
+      const baseRole = targetRole.split(" ")[0] || "Software";
+      const totalHours = 25 + 35 + 30 + 28 + 40;
+      const estimatedWeeks = Math.ceil(totalHours / weeklyHours);
+
+      const rawGraph: RoadmapGraph = {
         metadata: {
-          targetRole: targetRole,
-          domain: "Specialized Engineering",
+          targetRole,
+          domain: `${targetRole} Production Engineering`,
           weeklyCommitment: weeklyHours,
-          totalEstimatedWeeks: 16,
-          roleOverview: `Reverse-engineered stepping stones for ${targetRole}, focusing on production implementations rather than generic tutorials.`,
-          whyThisPath: `Tailored curriculum emphasizing actionable portfolio projects, system design trade-offs, and domain-specific tools.`
+          totalEstimatedWeeks: estimatedWeeks,
+          roleOverview: `Reverse-engineered stepping stones for ${targetRole}, calibrated for a ${experienceLevel} level candidate with hands-on deliverables.`,
+          whyThisPath: `Tailored curriculum emphasizing actionable portfolio projects, system design trade-offs, and domain-specific tools over generic checklists.`,
+          candidateProfile: {
+            experienceLevel,
+            knownSkills,
+          },
         },
         nodes: [
           {
             id: "node-1",
-            title: `Foundations of ${targetRole.split(" ")[0] || "Core"} Engineering`,
+            title: `Foundations of ${baseRole} Engineering`,
             phase: "Foundation",
             category: "Language",
-            status: "completed",
+            status: "unlocked", // Starts Active!
             estimatedHours: 25,
             difficulty: "Beginner",
             prerequisites: [],
-            summary: `Core foundational competencies and modern programming idioms required for ${targetRole}.`,
+            summary: `Core foundational competencies, syntax idioms, and architectural mental models required for ${targetRole}.`,
+            whatToLearnAndWhy: `Before touching complex enterprise distributed pipelines, you must understand core language primitives, memory models, and async execution flows.`,
             actionable: {
               weekendProject: {
-                title: "CLI Domain Toolkit",
-                description: `Build an open-source CLI utility with strict schema validation tailored for ${targetRole} workflows.`,
-                deliverable: "GitHub repository with automated CI workflows and unit tests."
+                title: `${baseRole} Domain CLI Toolkit`,
+                description: `Build an open-source CLI utility with strict schema validation and test suites tailored for ${targetRole} workflows.`,
+                deliverable: "GitHub repository with automated CI workflows and 90%+ test coverage."
               },
               recommendedRepos: [
-                { name: "goldbergyoni/nodebestpractices", url: "https://github.com/goldbergyoni/nodebestpractices", description: "Production best practices and patterns." }
+                { name: "goldbergyoni/nodebestpractices", url: "https://github.com/goldbergyoni/nodebestpractices", description: "Production best practices and design patterns." }
               ],
               interviewQuestions: [
                 {
                   question: `What is the most critical design constraint when building systems for ${targetRole}?`,
-                  idealAnswer: "Balancing maintainability and strict type safety against latency and data throughput."
+                  idealAnswer: "Balancing maintainability and strict type safety against latency and data throughput under peak load."
                 }
               ],
-              skillsLearned: ["Core Paradigms", "Async Systems", "Testing", "Design Patterns"]
+              skillsLearned: ["Core Paradigms", "Async Systems", "Testing", "Design Patterns"],
+              verifiedResources: [
+                {
+                  name: "MDN Web & System Architecture Specs",
+                  type: "Official Documentation",
+                  url: "https://developer.mozilla.org/",
+                  isVerified: true,
+                  notes: "Authoritative specifications and standards."
+                }
+              ]
             }
           },
           {
@@ -72,15 +145,16 @@ export async function POST(req: NextRequest) {
             title: "Data Pipelines & State Management",
             phase: "Core Architecture",
             category: "Architecture",
-            status: "unlocked",
+            status: "locked",
             estimatedHours: 35,
             difficulty: "Intermediate",
             prerequisites: ["node-1"],
             summary: "Managing distributed state, caching layers, and high-volume data streams.",
+            whatToLearnAndWhy: "Modern production applications cannot rely on naive memory storage. You need scalable database schemas, indexing strategies, and caching layers.",
             actionable: {
               weekendProject: {
                 title: "Event-Driven State Machine",
-                description: "Implement a persistent queue with exponential backoff and idempotency handling.",
+                description: "Implement a persistent queue with exponential backoff, dead-letter topics, and idempotency handling.",
                 deliverable: "Dockerized service with benchmark test suites."
               },
               recommendedRepos: [
@@ -89,22 +163,32 @@ export async function POST(req: NextRequest) {
               interviewQuestions: [
                 {
                   question: "How do you guarantee exactly-once processing in distributed event pipelines?",
-                  idealAnswer: "Combine at-least-once delivery with persistent idempotency keys in an atomic data store."
+                  idealAnswer: "Combine at-least-once delivery with persistent idempotency keys in an atomic transactional data store."
                 }
               ],
-              skillsLearned: ["Idempotency", "Redis", "Message Queues", "Fault Tolerance"]
+              skillsLearned: ["Idempotency", "Redis", "Message Queues", "Fault Tolerance"],
+              verifiedResources: [
+                {
+                  name: "PostgreSQL Official Documentation",
+                  type: "Official Documentation",
+                  url: "https://www.postgresql.org/docs/",
+                  isVerified: true,
+                  notes: "Core relational query execution and concurrency guides."
+                }
+              ]
             }
           },
           {
             id: "node-3",
-            title: "Domain-Specific Niche Tooling",
+            title: "Domain-Specific Niche Tooling & Protocols",
             phase: "Specialization",
             category: "Framework",
-            status: "unlocked",
+            status: "locked",
             estimatedHours: 30,
             difficulty: "Intermediate",
             prerequisites: ["node-1"],
             summary: `Specialized tools, protocols, and micro-credentials distinguishing candidates in ${targetRole}.`,
+            whatToLearnAndWhy: "Generalist developers struggle because they don't know the exact domain libraries hiring managers test for.",
             actionable: {
               weekendProject: {
                 title: "Production Integration Module",
@@ -117,10 +201,19 @@ export async function POST(req: NextRequest) {
               interviewQuestions: [
                 {
                   question: "Which trade-off defines architectural choices in this domain?",
-                  idealAnswer: "Consistency versus availability according to the CAP theorem, tailored to user expectations."
+                  idealAnswer: "Consistency versus availability according to the CAP theorem, tailored to user business expectations."
                 }
               ],
-              skillsLearned: ["API Integration", "Protocol Buffers", "Benchmarking", "Telemetry"]
+              skillsLearned: ["API Integration", "Protocol Buffers", "Benchmarking", "Telemetry"],
+              verifiedResources: [
+                {
+                  name: "OWASP & Cloud Native Computing Foundation (CNCF)",
+                  type: "Official Documentation",
+                  url: "https://www.cncf.io/",
+                  isVerified: true,
+                  notes: "Open source vendor-neutral cloud computing foundation."
+                }
+              ]
             }
           },
           {
@@ -133,6 +226,7 @@ export async function POST(req: NextRequest) {
             difficulty: "Advanced",
             prerequisites: ["node-2", "node-3"],
             summary: "Telemetry instrumentation, distributed tracing, and enterprise-grade security guardrails.",
+            whatToLearnAndWhy: "In senior and mid-level interviews, candidates are judged on how they monitor and safeguard live systems when failures occur.",
             actionable: {
               weekendProject: {
                 title: "OpenTelemetry Dashboard & Alerting",
@@ -148,7 +242,16 @@ export async function POST(req: NextRequest) {
                   idealAnswer: "Metrics are aggregated counters over time; logs are discreet timestamped events; traces track end-to-end request lifecycle across microservice boundaries."
                 }
               ],
-              skillsLearned: ["OpenTelemetry", "Distributed Tracing", "Security Hardening", "Alerting"]
+              skillsLearned: ["OpenTelemetry", "Distributed Tracing", "Security Hardening", "Alerting"],
+              verifiedResources: [
+                {
+                  name: "OpenTelemetry Official Documentation",
+                  type: "Official Documentation",
+                  url: "https://opentelemetry.io/docs/",
+                  isVerified: true,
+                  notes: "High-quality, ubiquitous, and portable telemetry specifications."
+                }
+              ]
             }
           },
           {
@@ -157,14 +260,15 @@ export async function POST(req: NextRequest) {
             phase: "Capstone & Portfolio",
             category: "Project",
             status: "locked",
-            estimatedHours: 45,
+            estimatedHours: 40,
             difficulty: "Advanced",
             prerequisites: ["node-4"],
             summary: `End-to-end showcase project demonstrating full mastery of ${targetRole} to hiring managers.`,
+            whatToLearnAndWhy: "Having a deployed, working flagship project in your resume gives you immediate credibility over applicants who only list coursework.",
             actionable: {
               weekendProject: {
                 title: `Apex — ${targetRole} Flagship Platform`,
-                description: `Deploy a production-grade web application incorporating real-world data pipelines, auth, and automated CI/CD.`,
+                description: `Deploy a production-grade application incorporating real-world data pipelines, auth, and automated CI/CD.`,
                 deliverable: "Live public URL with full GitHub repository and 2-minute video walkthrough."
               },
               recommendedRepos: [
@@ -176,7 +280,16 @@ export async function POST(req: NextRequest) {
                   idealAnswer: "By eliminating manual reconciliation friction and slashing query latency by 4x through continuous aggregate caches."
                 }
               ],
-              skillsLearned: ["Production Architecture", "Full-Stack Deployment", "Portfolio Polish", "Technical Communication"]
+              skillsLearned: ["Production Architecture", "Full-Stack Deployment", "Portfolio Polish", "Technical Communication"],
+              verifiedResources: [
+                {
+                  name: "GitHub Actions CI/CD Documentation",
+                  type: "Official Documentation",
+                  url: "https://docs.github.com/en/actions",
+                  isVerified: true,
+                  notes: "Automated continuous integration and deployment documentation."
+                }
+              ]
             }
           }
         ],
@@ -188,14 +301,28 @@ export async function POST(req: NextRequest) {
           { id: "e4-5", source: "node-4", target: "node-5" }
         ]
       };
-      return NextResponse.json(synthesized);
+
+      return applyKnownSkills(rawGraph);
+    };
+
+    if (!apiKey || apiKey === "your_gemini_api_key_here") {
+      return NextResponse.json(generateSynthesized());
     }
 
-    // Call Gemini API
+    // Call Gemini API with strict schema
     const systemPrompt = `You are an elite Silicon Valley technical recruiter and principal engineer.
 The user wants to reverse-engineer their dream role into an interactive DAG (Directed Acyclic Graph) skill tree.
-Generate a realistic, non-generic career roadmap specifically for the target: "${targetRole}".
-Avoid generic advice like "learn HTML" or "build a todo app". Provide exact real-world architectures, niche open-source tools, concrete weekend projects, and actual interview questions asked for this role.
+Target Position: "${targetRole}"
+Candidate Profile:
+- Experience Level: ${experienceLevel}
+- Known Skills to Bypass / Fast-Track: ${knownSkills.length > 0 ? knownSkills.join(", ") : "None specified"}
+- Weekly Available Hours: ${weeklyHours}
+
+IMPORTANT RULES:
+1. The first foundational milestone (node-1) MUST have status "unlocked" (Active) so the user can start learning, NOT "completed", UNLESS it explicitly matches one of the user's Known Skills!
+2. Downstream milestones must have status "locked".
+3. Provide realistic, non-generic advice: real architectures, concrete weekend projects, and actual interview questions.
+4. Distinguish verified official documentation / resources with real URLs.
 
 Output must be valid JSON strictly adhering to this TypeScript structure:
 {
@@ -209,15 +336,16 @@ Output must be valid JSON strictly adhering to this TypeScript structure:
   },
   "nodes": [
     {
-      "id": "node-1", // sequential node-1, node-2...
+      "id": "node-1", // sequential
       "title": string,
       "phase": "Foundation" | "Core Architecture" | "Specialization" | "Capstone & Portfolio" | "Target Role",
       "category": "Language" | "Framework" | "Architecture" | "Project" | "Certification" | "Domain Knowledge",
-      "status": "completed" | "unlocked" | "locked", // First node completed, subsequent reachable ones unlocked, rest locked
+      "status": "unlocked" | "locked", // First node unlocked, rest locked
       "estimatedHours": number,
       "difficulty": "Beginner" | "Intermediate" | "Advanced",
       "prerequisites": string[], // ids of prior nodes
       "summary": string,
+      "whatToLearnAndWhy": string,
       "actionable": {
         "weekendProject": {
           "title": string,
@@ -230,7 +358,16 @@ Output must be valid JSON strictly adhering to this TypeScript structure:
         "interviewQuestions": [
           { "question": string, "idealAnswer": string }
         ],
-        "skillsLearned": string[]
+        "skillsLearned": string[],
+        "verifiedResources": [
+          {
+            "name": string,
+            "type": "Official Documentation" | "Course / Guide" | "Industry Standard (Optional)",
+            "url": string,
+            "isVerified": boolean,
+            "notes": string
+          }
+        ]
       }
     }
   ],
@@ -239,8 +376,7 @@ Output must be valid JSON strictly adhering to this TypeScript structure:
   ]
 }
 
-Ensure the nodes and edges form a valid Directed Acyclic Graph (DAG) with 5 to 7 nodes total.
-DO NOT wrap the response in markdown blocks if requested as JSON, or return ONLY the raw JSON object.`;
+Ensure the nodes and edges form a valid Directed Acyclic Graph (DAG) with 5 to 7 nodes total.`;
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
@@ -248,39 +384,30 @@ DO NOT wrap the response in markdown blocks if requested as JSON, or return ONLY
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: systemPrompt }
-            ]
-          }
-        ],
+        contents: [{ parts: [{ text: systemPrompt }] }],
         generationConfig: {
           response_mime_type: "application/json",
-          temperature: 0.3
+          temperature: 0.25
         }
       })
     });
 
     if (!geminiRes.ok) {
-      console.warn("Gemini call returned error status:", geminiRes.status);
-      // Return clean fallback rather than breaking the demo
-      return NextResponse.json(sampleRoadmaps["climate-tech"]);
+      return NextResponse.json(generateSynthesized());
     }
 
     const geminiData = await geminiRes.json();
     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+
     if (!rawText) {
-      return NextResponse.json(sampleRoadmaps["climate-tech"]);
+      return NextResponse.json(generateSynthesized());
     }
 
     const parsed: RoadmapGraph = JSON.parse(rawText);
-    return NextResponse.json(parsed);
+    return NextResponse.json(applyKnownSkills(parsed));
 
   } catch (error) {
     console.error("API error in /api/generate:", error);
-    // Never crash the table demo
-    return NextResponse.json(sampleRoadmaps["climate-tech"]);
+    return NextResponse.json(sampleRoadmaps["cyber-security"]);
   }
 }

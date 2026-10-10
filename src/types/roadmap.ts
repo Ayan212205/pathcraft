@@ -32,6 +32,14 @@ export interface WeekendProject {
   deliverable: string;
 }
 
+export interface VerifiedResource {
+  name: string;
+  type: "Official Documentation" | "Course / Guide" | "Industry Standard (Optional)";
+  url: string;
+  isVerified: boolean;
+  notes?: string;
+}
+
 export interface RoadmapNodeData extends Record<string, unknown> {
   id: string;
   title: string;
@@ -42,11 +50,13 @@ export interface RoadmapNodeData extends Record<string, unknown> {
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   prerequisites: string[];
   summary: string;
+  whatToLearnAndWhy?: string;
   actionable: {
     weekendProject: WeekendProject;
     recommendedRepos: RepoRecommendation[];
     interviewQuestions: InterviewQuestion[];
     skillsLearned: string[];
+    verifiedResources?: VerifiedResource[];
   };
 }
 
@@ -57,6 +67,10 @@ export interface RoadmapMetadata {
   totalEstimatedWeeks: number;
   roleOverview: string;
   whyThisPath: string;
+  candidateProfile?: {
+    experienceLevel: string;
+    knownSkills: string[];
+  };
 }
 
 export interface RoadmapGraph {

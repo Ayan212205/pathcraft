@@ -1,6 +1,229 @@
 import { RoadmapGraph } from "@/types/roadmap";
 
 export const sampleRoadmaps: Record<string, RoadmapGraph> = {
+  "cyber-security": {
+    metadata: {
+      targetRole: "Cyber Security Engineer",
+      domain: "Offensive Security & Enterprise Defense",
+      weeklyCommitment: 12,
+      totalEstimatedWeeks: 14,
+      roleOverview: "Design secure network perimeters, conduct automated vulnerability assessments, and implement Zero-Trust threat containment pipelines.",
+      whyThisPath: "Entry-level candidates often only learn tools like Wireshark without understanding Linux packet filtering (eBPF/iptables), OWASP remediation, or cloud IAM architectures."
+    },
+    nodes: [
+      {
+        id: "node-1",
+        title: "Linux Kernel Security & Networking Protocols",
+        phase: "Foundation",
+        category: "Language",
+        status: "unlocked", // Starts Active!
+        estimatedHours: 25,
+        difficulty: "Beginner",
+        prerequisites: [],
+        summary: "Master TCP/IP handshakes, packet headers, DNS spoofing vectors, and Linux system call auditing.",
+        whatToLearnAndWhy: "Every security exploit manipulates fundamental operating system primitives or network protocols. You must understand how raw sockets and packet fragmentation work before you can defend against them.",
+        actionable: {
+          weekendProject: {
+            title: "Custom Scapy Packet Sniffer & Anomaly Detector",
+            description: "Build a Python network monitor using Scapy that inspects incoming packets, flags SYN flood attempts, and generates alert logs.",
+            deliverable: "GitHub repository with automated PCAP packet analysis scripts and unit tests."
+          },
+          recommendedRepos: [
+            { name: "secdev/scapy", url: "https://github.com/secdev/scapy", description: "Packet manipulation library for Python." }
+          ],
+          interviewQuestions: [
+            {
+              question: "Explain the TCP 3-way handshake and how a SYN flood attack exploits the embryonic connection backlog.",
+              idealAnswer: "The client sends SYN, server responds SYN-ACK allocating half-open state in memory. If ACK never arrives, connection tables exhaust. Defended using SYN cookies."
+            }
+          ],
+          skillsLearned: ["TCP/IP Analysis", "Scapy", "Linux System Calls", "Network Traffic Sniffing"],
+          verifiedResources: [
+            {
+              name: "PortSwigger Web Security Academy",
+              type: "Course / Guide",
+              url: "https://portswigger.net/web-security",
+              isVerified: true,
+              notes: "Free, hands-on enterprise security training labs by the makers of Burp Suite."
+            },
+            {
+              name: "NIST Special Publication 800-53",
+              type: "Official Documentation",
+              url: "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+              isVerified: true,
+              notes: "National Institute of Standards security and privacy controls."
+            },
+            {
+              name: "CompTIA Security+ / CEH (Optional Industry Reference)",
+              type: "Industry Standard (Optional)",
+              url: "https://www.comptia.org/certifications/security",
+              isVerified: true,
+              notes: "Widely referenced foundational body of knowledge. Useful for syllabus structure, though personal projects carry more interview weight."
+            }
+          ]
+        }
+      },
+      {
+        id: "node-2",
+        title: "Web App Penetration Testing & OWASP Top 10",
+        phase: "Core Architecture",
+        category: "Architecture",
+        status: "locked",
+        estimatedHours: 35,
+        difficulty: "Intermediate",
+        prerequisites: ["node-1"],
+        summary: "Identify and remediate SQL injection, Cross-Site Scripting (XSS), SSRF, and broken object-level authorization (BOLA).",
+        whatToLearnAndWhy: "Over 80% of modern breaches exploit application layer vulnerabilities. Recruiters test candidates heavily on explaining exact exploit mechanisms and code-level patches.",
+        actionable: {
+          weekendProject: {
+            title: "Vulnerable Lab Audit & Code Remediation",
+            description: "Audit an intentionally vulnerable web application (DVWA/Juice Shop), document exploit proofs-of-concept, and submit code patches fixing all identified flaws.",
+            deliverable: "Comprehensive Penetration Test Report with before/after patched code diffs."
+          },
+          recommendedRepos: [
+            { name: "OWASP/CheatSheetSeries", url: "https://github.com/OWASP/CheatSheetSeries", description: "The OWASP security developer cheat sheet series." }
+          ],
+          interviewQuestions: [
+            {
+              question: "What is Server-Side Request Forgery (SSRF) and how do attackers use it to access AWS cloud metadata?",
+              idealAnswer: "SSRF tricks a server into making HTTP requests to internal IP addresses (like 169.254.169.254 in AWS) to harvest temporary IAM security credentials."
+            }
+          ],
+          skillsLearned: ["OWASP Top 10", "Burp Suite", "Remediation Diffing", "Input Sanitization"],
+          verifiedResources: [
+            {
+              name: "OWASP Top 10 Official Documentation",
+              type: "Official Documentation",
+              url: "https://owasp.org/www-project-top-ten/",
+              isVerified: true,
+              notes: "The global benchmark standard for web application security awareness."
+            }
+          ]
+        }
+      },
+      {
+        id: "node-3",
+        title: "Cloud Infrastructure Security & IAM Hardening",
+        phase: "Specialization",
+        category: "Architecture",
+        status: "locked",
+        estimatedHours: 30,
+        difficulty: "Intermediate",
+        prerequisites: ["node-1"],
+        summary: "Enforce least-privilege IAM policies, audit S3 bucket ACLs, and implement automated Terraform security linting.",
+        whatToLearnAndWhy: "Modern infrastructure lives in the cloud. Misconfigured IAM roles and unencrypted storage are the leading causes of massive data leaks today.",
+        actionable: {
+          weekendProject: {
+            title: "Automated Cloud Misconfiguration Scanner",
+            description: "Write a tool using AWS SDK / Boto3 that audits cloud resources for publicly accessible storage buckets, wildcard permissions, and unrotated API keys.",
+            deliverable: "Python CLI tool with JSON compliance reporting against CIS AWS Benchmarks."
+          },
+          recommendedRepos: [
+            { name: "aquasecurity/trivy", url: "https://github.com/aquasecurity/trivy", description: "Comprehensive security scanner for vulnerabilities and misconfigurations." }
+          ],
+          interviewQuestions: [
+            {
+              question: "How do you enforce the principle of least privilege in cloud environments without breaking developer velocity?",
+              idealAnswer: "Use permission boundaries, automated SCP guardrails, ephemeral just-in-time access (e.g. AWS IAM Identity Center), and automated policy access analysis."
+            }
+          ],
+          skillsLearned: ["Cloud IAM", "Terraform Security", "CIS Benchmarks", "Least Privilege"],
+          verifiedResources: [
+            {
+              name: "AWS Well-Architected Security Pillar",
+              type: "Official Documentation",
+              url: "https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html",
+              isVerified: true,
+              notes: "Core architectural guidelines for building secure workloads in AWS."
+            }
+          ]
+        }
+      },
+      {
+        id: "node-4",
+        title: "SOC Telemetry & SIEM Incident Response",
+        phase: "Specialization",
+        category: "Domain Knowledge",
+        status: "locked",
+        estimatedHours: 28,
+        difficulty: "Advanced",
+        prerequisites: ["node-2", "node-3"],
+        summary: "Aggregate security event logs, write Sigma detection rules, and automate incident response runbooks.",
+        whatToLearnAndWhy: "Prevention is only half the battle; real organizations need rapid detection and containment within minutes of an adversary gaining initial access.",
+        actionable: {
+          weekendProject: {
+            title: "Simulated SOC Detection Pipeline",
+            description: "Deploy an ELK / Wazuh SIEM stack in Docker, ingest Windows Event Logs and Sysmon feeds, and write custom Sigma rules to alert on Mimikatz credential dumps.",
+            deliverable: "Dockerized SIEM environment with alert triage dashboard and tested Sigma rules."
+          },
+          recommendedRepos: [
+            { name: "SigmaHQ/sigma", url: "https://github.com/SigmaHQ/sigma", description: "Generic signature format for SIEM detection rules." }
+          ],
+          interviewQuestions: [
+            {
+              question: "What is the difference between an Indicator of Compromise (IoC) and an Indicator of Attack (IoA)?",
+              idealAnswer: "IoCs are forensic artifacts of past compromise (hashes, IPs); IoAs identify proactive adversary intent and behavior in real-time regardless of specific malware."
+            }
+          ],
+          skillsLearned: ["SIEM (Wazuh/ELK)", "Sigma Rules", "Sysmon Log Analysis", "Incident Response"],
+          verifiedResources: [
+            {
+              name: "MITRE ATT&CK Framework",
+              type: "Official Documentation",
+              url: "https://attack.mitre.org/",
+              isVerified: true,
+              notes: "Globally accessible knowledge base of adversary tactics and techniques."
+            }
+          ]
+        }
+      },
+      {
+        id: "node-5",
+        title: "Enterprise Zero-Trust Defense Capstone",
+        phase: "Capstone & Portfolio",
+        category: "Project",
+        status: "locked",
+        estimatedHours: 40,
+        difficulty: "Advanced",
+        prerequisites: ["node-4"],
+        summary: "Deploy an end-to-end Zero-Trust architecture featuring Mutual TLS (mTLS), automated secret rotation, and intrusion containment.",
+        whatToLearnAndWhy: "A capstone project proving you can design and defend complete organizational topologies, standing out dramatically from applicants who only possess textbook knowledge.",
+        actionable: {
+          weekendProject: {
+            title: "AegisShield — Autonomous Zero-Trust Architecture",
+            description: "Deploy a microservice cluster secured with HashiCorp Vault for dynamic secret injection, Envoy mTLS service mesh, and automated quarantine scripts upon alert triggers.",
+            deliverable: "Public GitHub repository with complete Docker Compose / Kubernetes manifests and architecture defense deck."
+          },
+          recommendedRepos: [
+            { name: "hashicorp/vault", url: "https://github.com/hashicorp/vault", description: "Tool for secrets management, encryption, and privileged access." }
+          ],
+          interviewQuestions: [
+            {
+              question: "Walk me through how you designed AegisShield to prevent lateral movement after an initial node compromise.",
+              idealAnswer: "By implementing strict mTLS service-to-service authorization with SPIFFE identities and short-lived ephemeral tokens issued by HashiCorp Vault."
+            }
+          ],
+          skillsLearned: ["Zero-Trust Architecture", "HashiCorp Vault", "Mutual TLS", "Defense-in-Depth"],
+          verifiedResources: [
+            {
+              name: "NIST Special Publication 800-207 (Zero Trust)",
+              type: "Official Documentation",
+              url: "https://csrc.nist.gov/publications/detail/sp/800-207/final",
+              isVerified: true,
+              notes: "Authoritative architectural definition of Zero Trust Architecture standards."
+            }
+          ]
+        }
+      }
+    ],
+    edges: [
+      { id: "e1-2", source: "node-1", target: "node-2" },
+      { id: "e1-3", source: "node-1", target: "node-3" },
+      { id: "e2-4", source: "node-2", target: "node-4" },
+      { id: "e3-4", source: "node-3", target: "node-4" },
+      { id: "e4-5", source: "node-4", target: "node-5" }
+    ]
+  },
   "climate-tech": {
     metadata: {
       targetRole: "Full Stack Developer at a Climate Tech Startup",
@@ -16,11 +239,12 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         title: "Modern TypeScript & Async Systems",
         phase: "Foundation",
         category: "Language",
-        status: "completed",
+        status: "unlocked", // Starts Active!
         estimatedHours: 25,
         difficulty: "Beginner",
         prerequisites: [],
         summary: "Robust type systems for modeling real-world physical sensor devices and asynchronous event streams.",
+        whatToLearnAndWhy: "IoT microgrids stream asynchronous metrics with variable schema quality. Type safety prevents runtime parsing failures that disrupt live solar telemetry monitoring.",
         actionable: {
           weekendProject: {
             title: "Strict Energy Metric Validator",
@@ -36,7 +260,23 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
               idealAnswer: "Use BigInt or fixed-point decimal libraries (like bignumber.js) rather than standard IEEE 754 floating points to prevent cumulative billing discrepancies."
             }
           ],
-          skillsLearned: ["TypeScript Generics", "Zod", "Async/Await", "Error Boundaries"]
+          skillsLearned: ["TypeScript Generics", "Zod", "Async/Await", "Error Boundaries"],
+          verifiedResources: [
+            {
+              name: "Official TypeScript Handbook",
+              type: "Official Documentation",
+              url: "https://www.typescriptlang.org/docs/handbook/intro.html",
+              isVerified: true,
+              notes: "The authoritative language specification and type system reference."
+            },
+            {
+              name: "GHG Protocol Corporate Standard",
+              type: "Official Documentation",
+              url: "https://ghgprotocol.org/corporate-standard",
+              isVerified: true,
+              notes: "The global official standard for measuring corporate greenhouse gas emissions."
+            }
+          ]
         }
       },
       {
@@ -44,11 +284,12 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         title: "High-Frequency Time-Series DBs",
         phase: "Core Architecture",
         category: "Architecture",
-        status: "unlocked",
+        status: "locked",
         estimatedHours: 35,
         difficulty: "Intermediate",
         prerequisites: ["node-1"],
         summary: "Storing millions of solar/wind telemetry datapoints per minute using TimescaleDB or ClickHouse instead of standard Postgres tables.",
+        whatToLearnAndWhy: "Relational B-Tree indexes degrade severely under millions of daily timestamp writes. Time-series hypertables automate chunk partitioning and continuous aggregate rollups.",
         actionable: {
           weekendProject: {
             title: "Simulated Microgrid Telemetry Ingestor",
@@ -64,7 +305,16 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
               idealAnswer: "Hypertables abstract physical chunks partitioned by time intervals, automating chunk management, parallel disk writes, and continuous aggregate rollups."
             }
           ],
-          skillsLearned: ["TimescaleDB", "Hypertables", "Continuous Aggregates", "Data Retention Policies"]
+          skillsLearned: ["TimescaleDB", "Hypertables", "Continuous Aggregates", "Data Retention Policies"],
+          verifiedResources: [
+            {
+              name: "TimescaleDB Documentation",
+              type: "Official Documentation",
+              url: "https://docs.timescale.com/",
+              isVerified: true,
+              notes: "Architecture guides and hypertable best practices."
+            }
+          ]
         }
       },
       {
@@ -72,11 +322,12 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         title: "Geospatial Data & Map Visualizations",
         phase: "Core Architecture",
         category: "Framework",
-        status: "unlocked",
+        status: "locked",
         estimatedHours: 30,
         difficulty: "Intermediate",
         prerequisites: ["node-1"],
         summary: "Displaying live solar farms, wind turbine statuses, and transmission line heatmaps using Mapbox GL and Deck.gl.",
+        whatToLearnAndWhy: "Energy infrastructure is geographic. Hiring managers expect candidates who can render 100k+ point coordinates with GPU instancing rather than sluggish SVG elements.",
         actionable: {
           weekendProject: {
             title: "National Grid Clean Energy Map",
@@ -89,10 +340,19 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
           interviewQuestions: [
             {
               question: "How do you render 100,000 IoT sensor coordinates on a web map without freezing the browser thread?",
-              idealAnswer: "Offload rendering to WebGL using GPU instanced point clouds (e.g., Deck.gl ScatterplotLayer) and vector tile services like GeoJSON vector tiles with Tippecanoe."
+              idealAnswer: "Offload rendering to WebGL using GPU instanced point clouds (e.g., Deck.gl ScatterplotLayer) and vector tile services."
             }
           ],
-          skillsLearned: ["Deck.gl", "Mapbox GL JS", "GeoJSON", "GPU Instancing"]
+          skillsLearned: ["Deck.gl", "Mapbox GL JS", "GeoJSON", "GPU Instancing"],
+          verifiedResources: [
+            {
+              name: "Deck.gl Official Documentation",
+              type: "Official Documentation",
+              url: "https://deck.gl/docs",
+              isVerified: true,
+              notes: "GPU-powered data visualization framework docs."
+            }
+          ]
         }
       },
       {
@@ -105,10 +365,11 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         difficulty: "Intermediate",
         prerequisites: ["node-2"],
         summary: "Implementing standardized corporate carbon accounting calculations following the global Greenhouse Gas (GHG) protocol.",
+        whatToLearnAndWhy: "Enterprise carbon compliance requires strict mathematical audits using regional emission factor tables (EPA eGRID / UK DEFRA).",
         actionable: {
           weekendProject: {
             title: "Automated Scope 2 Carbon Emissions Calculator",
-            description: "A RESTful microservice that takes electricity bill kWh inputs, matches them with regional grid emission factors (EPA eGRID / UK DEFRA), and computes MTCO2e emissions.",
+            description: "A RESTful microservice that takes electricity bill kWh inputs, matches them with regional grid emission factors, and computes MTCO2e emissions.",
             deliverable: "Microservice with open OpenAPI/Swagger specs and unit-tested emission conversions."
           },
           recommendedRepos: [
@@ -117,50 +378,32 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
           interviewQuestions: [
             {
               question: "Explain the difference between location-based and market-based Scope 2 emissions reporting.",
-              idealAnswer: "Location-based reflects average grid emissions where electricity is consumed; market-based factors in contractual instruments like RECs, PPAs, and green tariffs."
+              idealAnswer: "Location-based reflects average grid emissions where electricity is consumed; market-based factors in contractual instruments like RECs and green tariffs."
             }
           ],
-          skillsLearned: ["GHG Protocol", "Emission Factors", "Carbon Auditing", "Compliance Schemas"]
+          skillsLearned: ["GHG Protocol", "Emission Factors", "Carbon Auditing", "Compliance Schemas"],
+          verifiedResources: [
+            {
+              name: "EPA eGRID Datasets",
+              type: "Official Documentation",
+              url: "https://www.epa.gov/egrid",
+              isVerified: true,
+              notes: "Emissions & Generation Resource Integrated Database official factors."
+            }
+          ]
         }
       },
       {
         id: "node-5",
-        title: "Real-Time WebSocket Ingestion Pipeline",
-        phase: "Specialization",
-        category: "Architecture",
-        status: "locked",
-        estimatedHours: 40,
-        difficulty: "Advanced",
-        prerequisites: ["node-2", "node-3"],
-        summary: "Building low-latency WebSocket backplanes with Redis Pub/Sub to push grid frequency drops and inverter faults directly to client UIs.",
-        actionable: {
-          weekendProject: {
-            title: "Fault Alert Dispatch Engine",
-            description: "A fast WebSocket server in Node.js/Go that detects inverter voltage surges and broadcasts prioritized alert banners to subscribed operators.",
-            deliverable: "End-to-end WebSocket connection handling with automatic reconnection and backoff."
-          },
-          recommendedRepos: [
-            { name: "redis/ioredis", url: "https://github.com/redis/ioredis", description: "Robust, full-featured Redis client for Node.js." }
-          ],
-          interviewQuestions: [
-            {
-              question: "How do you prevent WebSocket message drops during high spike events like sudden grid frequency anomalies?",
-              idealAnswer: "Implement a message queue buffer (e.g. Kafka or Redis Streams) with backpressure regulation and client-side delta compression."
-            }
-          ],
-          skillsLearned: ["WebSockets", "Redis Pub/Sub", "Backpressure", "Event-Driven Systems"]
-        }
-      },
-      {
-        id: "node-6",
         title: "Production Grid Ops Capstone",
         phase: "Capstone & Portfolio",
         category: "Project",
         status: "locked",
         estimatedHours: 45,
         difficulty: "Advanced",
-        prerequisites: ["node-4", "node-5"],
+        prerequisites: ["node-3", "node-4"],
         summary: "A production-grade, end-to-end Microgrid Telemetry & Carbon Accounting Platform ready to showcase in interviews.",
+        whatToLearnAndWhy: "Tie your entire stack together into a cohesive SaaS deployment that immediately proves your readiness for climate-tech startups.",
         actionable: {
           weekendProject: {
             title: "VoltPulse — Autonomous Microgrid Control Center",
@@ -176,7 +419,16 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
               idealAnswer: "We use store-and-forward local gateway caching with idempotency keys on ingestion to guarantee deduplication upon reconnect."
             }
           ],
-          skillsLearned: ["System Architecture", "End-to-End Delivery", "Observability", "Portfolio Presentation"]
+          skillsLearned: ["System Architecture", "End-to-End Delivery", "Observability", "Portfolio Presentation"],
+          verifiedResources: [
+            {
+              name: "Open Climate Fix Community Docs",
+              type: "Course / Guide",
+              url: "https://openclimatefix.org/",
+              isVerified: true,
+              notes: "Open source AI models and solar forecasting infrastructure."
+            }
+          ]
         }
       }
     ],
@@ -184,10 +436,8 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
       { id: "e1-2", source: "node-1", target: "node-2" },
       { id: "e1-3", source: "node-1", target: "node-3" },
       { id: "e2-4", source: "node-2", target: "node-4" },
-      { id: "e2-5", source: "node-2", target: "node-5" },
       { id: "e3-5", source: "node-3", target: "node-5" },
-      { id: "e4-6", source: "node-4", target: "node-6" },
-      { id: "e5-6", source: "node-5", target: "node-6" }
+      { id: "e4-5", source: "node-4", target: "node-5" }
     ]
   },
   "ai-agents": {
@@ -205,11 +455,12 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         title: "Python Async & Type Safe Architectures",
         phase: "Foundation",
         category: "Language",
-        status: "completed",
+        status: "unlocked", // Starts Active!
         estimatedHours: 20,
         difficulty: "Beginner",
         prerequisites: [],
         summary: "Pydantic V2 schema validation and asyncio for concurrent LLM tool execution.",
+        whatToLearnAndWhy: "Agents frequently trigger concurrent external API tools. Asynchronous concurrency and strict schema validation guarantee type safety without halting the main agent process.",
         actionable: {
           weekendProject: {
             title: "Structured Output Extractor",
@@ -225,7 +476,23 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
               idealAnswer: "Pydantic V2 core validation logic is written in Rust (pydantic-core), reducing JSON parsing overhead by 5-10x during rapid agent tool-use cycles."
             }
           ],
-          skillsLearned: ["Pydantic V2", "Asyncio", "Type Hints", "JSON Schema"]
+          skillsLearned: ["Pydantic V2", "Asyncio", "Type Hints", "JSON Schema"],
+          verifiedResources: [
+            {
+              name: "Official Python Asyncio Documentation",
+              type: "Official Documentation",
+              url: "https://docs.python.org/3/library/asyncio.html",
+              isVerified: true,
+              notes: "Asynchronous I/O, event loop, and coroutine specifications."
+            },
+            {
+              name: "Pydantic V2 Documentation",
+              type: "Official Documentation",
+              url: "https://docs.pydantic.dev/latest/",
+              isVerified: true,
+              notes: "Fast, ergonomic type validation for Python."
+            }
+          ]
         }
       },
       {
@@ -233,11 +500,12 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         title: "Hybrid Vector Search & Re-ranking (RAG)",
         phase: "Core Architecture",
         category: "Architecture",
-        status: "unlocked",
+        status: "locked",
         estimatedHours: 30,
         difficulty: "Intermediate",
         prerequisites: ["node-1"],
         summary: "Dense embedding retrieval combined with BM25 sparse keyword search and cross-encoder re-ranking.",
+        whatToLearnAndWhy: "Pure semantic vector retrieval misses exact technical terms and code snippets. Hybrid search ensures both conceptual understanding and precise token matching.",
         actionable: {
           weekendProject: {
             title: "Multi-Modal Codebase Indexer",
@@ -250,10 +518,19 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
           interviewQuestions: [
             {
               question: "When does pure dense vector search fail, and why does hybrid search fix it?",
-              idealAnswer: "Dense search fails on exact keywords, version numbers, and error codes. Hybrid search couples sparse BM25 keyword matching with semantic vector proximity for high recall."
+              idealAnswer: "Dense search fails on exact keywords, version numbers, and error codes. Hybrid search couples sparse BM25 keyword matching with semantic vector proximity."
             }
           ],
-          skillsLearned: ["Qdrant", "BM25", "Cross-Encoders", "Chunking Strategies"]
+          skillsLearned: ["Qdrant", "BM25", "Cross-Encoders", "Chunking Strategies"],
+          verifiedResources: [
+            {
+              name: "Qdrant Vector Database Documentation",
+              type: "Official Documentation",
+              url: "https://qdrant.tech/documentation/",
+              isVerified: true,
+              notes: "Vector search engine guides and hybrid search tutorials."
+            }
+          ]
         }
       },
       {
@@ -261,11 +538,12 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
         title: "Cyclic State Machines (LangGraph & AutoGen)",
         phase: "Core Architecture",
         category: "Framework",
-        status: "unlocked",
+        status: "locked",
         estimatedHours: 35,
         difficulty: "Intermediate",
         prerequisites: ["node-1"],
         summary: "Moving beyond simple linear chains to graph-based multi-turn agent state machines with conditional routing.",
+        whatToLearnAndWhy: "Real enterprise agents need loops, retries, and human verification before executing destructive tool actions.",
         actionable: {
           weekendProject: {
             title: "Self-Correcting Code Generation Agent",
@@ -281,47 +559,29 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
               idealAnswer: "Enforce deterministic loop guardrails: maximum recursion depth limits, exponential backoff, and fallback escalation to human-in-the-loop nodes."
             }
           ],
-          skillsLearned: ["State Machines", "LangGraph", "Cyclic Routing", "Sandbox Execution"]
+          skillsLearned: ["State Machines", "LangGraph", "Cyclic Routing", "Sandbox Execution"],
+          verifiedResources: [
+            {
+              name: "LangGraph Documentation",
+              type: "Official Documentation",
+              url: "https://langchain-ai.github.io/langgraph/",
+              isVerified: true,
+              notes: "State-machine-based multi-agent orchestration."
+            }
+          ]
         }
       },
       {
         id: "node-4",
-        title: "Agent Observability & Evals (Langfuse / Phoenix)",
-        phase: "Specialization",
-        category: "Architecture",
-        status: "locked",
-        estimatedHours: 25,
-        difficulty: "Intermediate",
-        prerequisites: ["node-2", "node-3"],
-        summary: "Tracing latency, token costs, hallucination rates, and benchmarking agent decisions with automated unit test suites.",
-        actionable: {
-          weekendProject: {
-            title: "Automated Regression Benchmark Suite",
-            description: "Create an eval dataset of 50 edge-case prompts and evaluate your agent's tool-calling accuracy using Langfuse traces.",
-            deliverable: "CI pipeline that blocks PRs if agent precision drops below 90%."
-          },
-          recommendedRepos: [
-            { name: "langfuse/langfuse", url: "https://github.com/langfuse/langfuse", description: "Open source LLM engineering platform." }
-          ],
-          interviewQuestions: [
-            {
-              question: "What is LLM-as-a-judge and how do you calibrate it against human evaluation?",
-              idealAnswer: "Using a larger model to score output criteria with few-shot rubrics, calibrated against Cohen's Kappa score on human-annotated test datasets."
-            }
-          ],
-          skillsLearned: ["Langfuse", "LLM Evals", "Token Tracing", "Regression Benchmarking"]
-        }
-      },
-      {
-        id: "node-5",
         title: "Autonomous DevSecOps Engineer Capstone",
         phase: "Capstone & Portfolio",
         category: "Project",
         status: "locked",
         estimatedHours: 40,
         difficulty: "Advanced",
-        prerequisites: ["node-4"],
+        prerequisites: ["node-2", "node-3"],
         summary: "A production multi-agent system that reviews incoming GitHub Pull Requests, discovers security vulnerabilities, and commits suggested patches.",
+        whatToLearnAndWhy: "An impressive, deployable portfolio asset that directly demonstrates agent operations, sandbox safety, and real developer workflow integration.",
         actionable: {
           weekendProject: {
             title: "PatchPilot — Autonomous Security PR Agent",
@@ -337,7 +597,16 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
               idealAnswer: "Strict separation of data and instruction channels, prompt sandwiching, and running tools in non-privileged microVM sandboxes."
             }
           ],
-          skillsLearned: ["Security Auditing", "GitHub Apps", "Sandboxing", "Production Agent Ops"]
+          skillsLearned: ["Security Auditing", "GitHub Apps", "Sandboxing", "Production Agent Ops"],
+          verifiedResources: [
+            {
+              name: "OWASP Top 10 for Large Language Model Applications",
+              type: "Official Documentation",
+              url: "https://owasp.org/www-project-top-10-for-large-language-model-applications/",
+              isVerified: true,
+              notes: "Standard security vulnerabilities in LLM and agent architectures."
+            }
+          ]
         }
       }
     ],
@@ -345,8 +614,7 @@ export const sampleRoadmaps: Record<string, RoadmapGraph> = {
       { id: "e1-2", source: "node-1", target: "node-2" },
       { id: "e1-3", source: "node-1", target: "node-3" },
       { id: "e2-4", source: "node-2", target: "node-4" },
-      { id: "e3-4", source: "node-3", target: "node-4" },
-      { id: "e4-5", source: "node-4", target: "node-5" }
+      { id: "e3-4", source: "node-3", target: "node-4" }
     ]
   }
 };
