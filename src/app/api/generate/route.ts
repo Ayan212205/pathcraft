@@ -35,8 +35,40 @@ export async function POST(req: NextRequest) {
 
         if (lowerKnown.length > 0) {
           const updatedNodes = baseGraph.nodes.map((node) => {
-            const text = `${node.title} ${node.summary} ${node.actionable.skillsLearned.join(" ")}`.toLowerCase();
-            const matches = lowerKnown.some((k) => text.includes(k));
+            const isFoundation = node.phase === "Foundation" || node.category === "Language";
+            const isCapstone = node.phase === "Capstone & Portfolio";
+
+            const matches = lowerKnown.some((k) => {
+              const cleanK = k.trim().toLowerCase();
+              if (!cleanK) return false;
+
+              // Check if keyword is a broad programming language or academic concept
+              const isGeneralLangOrConcept = [
+                "java", "python", "javascript", "typescript", "c++", "c#", "go", "rust",
+                "oop", "object oriented programing", "object oriented programming",
+                "dsa", "data structure", "data structures", "data structure and algorithm",
+                "data structures and algorithms", "coding", "programming", "sql", "linux", "git"
+              ].includes(cleanK);
+
+              if (isGeneralLangOrConcept) {
+                // Broad language/concept ONLY bypasses foundational / language milestones
+                if (!isFoundation) return false;
+
+                const nodeText = `${node.title} ${node.actionable.skillsLearned.join(" ")}`.toLowerCase();
+                return nodeText.includes(cleanK);
+              }
+
+              // Advanced framework keywords (like "spring", "spring boot", "kafka", "docker", "hibernate")
+              if (isCapstone) return false;
+
+              const nodeKeywords = [
+                node.title.toLowerCase(),
+                ...node.actionable.skillsLearned.map((s) => s.toLowerCase())
+              ];
+
+              return nodeKeywords.some((kw) => kw.includes(cleanK) || cleanK.includes(kw));
+            });
+
             if (matches) {
               return { ...node, status: "completed" as RoadmapNodeData["status"] };
             }
@@ -91,6 +123,17 @@ export async function POST(req: NextRequest) {
 
     // Synthesized domain fallback builder (Multi-domain ontology for resilient offline/no-key evaluation)
     const getDomainFallback = (): RoadmapGraph => {
+      // 0. Java & Spring Boot Developer (Full Beginning-to-End Enterprise Path)
+      if (
+        cleanRole.includes("java") ||
+        cleanRole.includes("spring") ||
+        cleanRole.includes("springboot") ||
+        cleanRole.includes("jvm") ||
+        cleanRole.includes("hibernate")
+      ) {
+        return sampleRoadmaps["java-developer"];
+      }
+
       // 1. Cyber Security
       if (
         cleanRole.includes("cyber") ||
@@ -794,7 +837,11 @@ IMPORTANT RULES:
 1. The first foundational milestone (node-1) MUST have status "unlocked" (Active) so the user can start learning, NOT "completed", UNLESS it explicitly matches one of the user's Known Skills!
 2. Downstream milestones must have status "locked".
 3. Provide realistic, non-generic advice: real architectures, concrete weekend projects, and actual interview questions specifically tailored to "${targetRole}".
-4. Distinguish verified official documentation / resources with real URLs.
+4. SPECIALIZED ECOSYSTEM REQUIREMENTS:
+   - For "Java Developer" / "Java Backend" / "Java Software Engineer": The roadmap MUST be a detailed, comprehensive beginning-to-end curriculum explicitly featuring Core Java (LTS), Spring Boot 3 Core, Spring Data JPA & Hibernate ORM, Spring Security 6 (JWT / OAuth2), Microservices (Spring Cloud), Apache Kafka event streaming, and an Enterprise Capstone! Do NOT return generic placeholders.
+   - For "DevOps": Explicitly feature Linux, Docker, Terraform, Kubernetes, Helm, and GitOps.
+   - For "Machine Learning": Explicitly feature NumPy, PyTorch, Transformers, Vector RAG, and FastAPI/MLflow serving.
+5. Distinguish verified official documentation / resources with real URLs.
 
 Output must be valid JSON strictly adhering to this TypeScript structure:
 {

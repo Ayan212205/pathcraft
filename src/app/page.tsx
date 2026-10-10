@@ -260,6 +260,12 @@ export default function Home() {
             Try Targets:
           </span>
           <button
+            onClick={() => handlePresetSelect("Java & Spring Boot Developer", "java-developer")}
+            className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-slate-300 hover:text-amber-300 transition-all text-xs"
+          >
+            ☕ Java & Spring Boot
+          </button>
+          <button
             onClick={() => handlePresetSelect("Cyber Security Engineer", "cyber-security")}
             className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-300 transition-all text-xs"
           >

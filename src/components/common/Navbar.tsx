@@ -159,6 +159,7 @@ export const Navbar: React.FC = () => {
                   Quick Load Target
                 </div>
                 {[
+                  { title: "Java & Spring Boot Developer", key: "java-developer", icon: "☕" },
                   { title: "Cyber Security Engineer", key: "cyber-security", icon: "🛡️" },
                   { title: "Climate Tech Full Stack", key: "climate-tech", icon: "🌱" },
                   { title: "Autonomous AI Agent Engineer", key: "ai-agents", icon: "🤖" },
