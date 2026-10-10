@@ -156,6 +156,17 @@ export const NodeDetailDrawer: React.FC<NodeDetailDrawerProps> = ({
           </div>
         )}
 
+        {/* Curated Official Learning Resources */}
+        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Lightbulb className="w-4 h-4 text-amber-400" />
+            AI Milestone Assistant — Architectural Pro-Tip
+          </h3>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            When demonstrating <strong>{node.title}</strong> in technical interviews, don&apos;t just explain how to use it — explain the <em>trade-offs</em> of when NOT to use it. Recruiter panels reward candidates who discuss failure modes, backpressure handling, and benchmarking over pure theoretical syntax.
+          </p>
+        </div>
+
         {/* Interview Simulation Questions */}
         {node.actionable.interviewQuestions.length > 0 && (
           <div>

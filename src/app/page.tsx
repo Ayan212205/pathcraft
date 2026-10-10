@@ -6,6 +6,8 @@ import { ResumeScannerModal } from "@/components/roadmap/ResumeScannerModal";
 import { RoleComparisonModal } from "@/components/roadmap/RoleComparisonModal";
 import { RoadmapCompletionModal } from "@/components/roadmap/RoadmapCompletionModal";
 import { AtsResumeAuditorModal } from "@/components/roadmap/AtsResumeAuditorModal";
+import { WeeklyActionPlanModal } from "@/components/roadmap/WeeklyActionPlanModal";
+import { SkillGapAnalyzerModal } from "@/components/roadmap/SkillGapAnalyzerModal";
 import { sampleRoadmaps } from "@/lib/mock-data";
 import { RoadmapGraph, RoadmapNodeData } from "@/types/roadmap";
 import {
@@ -24,6 +26,8 @@ import {
   GitCompare,
   PartyPopper,
   FileCheck,
+  Calendar,
+  PieChart,
 } from "lucide-react";
 
 export default function Home() {
@@ -35,6 +39,8 @@ export default function Home() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
   const [isAtsModalOpen, setIsAtsModalOpen] = useState(false);
+  const [isWeeklyPlanOpen, setIsWeeklyPlanOpen] = useState(false);
+  const [isSkillGapOpen, setIsSkillGapOpen] = useState(false);
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -317,6 +323,20 @@ export default function Home() {
           {/* Innovation Action Buttons */}
           <div className="flex items-center gap-2 justify-end flex-wrap">
             <button
+              onClick={() => setIsWeeklyPlanOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+              Weekly Plan
+            </button>
+            <button
+              onClick={() => setIsSkillGapOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <PieChart className="w-3.5 h-3.5 text-emerald-400" />
+              Skill Gap
+            </button>
+            <button
               onClick={() => setIsAtsModalOpen(true)}
               className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
             >
@@ -375,7 +395,25 @@ export default function Home() {
             </span>
           </div>
 
-          <RoadmapCanvas graph={graph} onUpdateGraph={setGraph} />
+          {loading ? (
+            <div className="relative w-full h-[680px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950/80 shadow-2xl flex flex-col items-center justify-center p-8 space-y-4">
+              <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm animate-pulse">
+                <Sparkles className="w-5 h-5 animate-spin" />
+                Synthesizing DAG Topological Nodes for &quot;{roleInput}&quot;...
+              </div>
+              <div className="w-full max-w-lg space-y-3">
+                <div className="h-3 bg-slate-800/80 rounded-full animate-pulse w-3/4 mx-auto" />
+                <div className="h-2.5 bg-slate-800/50 rounded-full animate-pulse w-1/2 mx-auto" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-2xl pt-6 opacity-40">
+                <div className="h-28 rounded-2xl bg-slate-900 border border-slate-800 animate-pulse" />
+                <div className="h-28 rounded-2xl bg-slate-900 border border-slate-800 animate-pulse delay-100" />
+                <div className="h-28 rounded-2xl bg-slate-900 border border-slate-800 animate-pulse delay-200" />
+              </div>
+            </div>
+          ) : (
+            <RoadmapCanvas graph={graph} onUpdateGraph={setGraph} />
+          )}
         </div>
       </div>
 
@@ -434,6 +472,47 @@ export default function Home() {
             return node;
           });
           setGraph({ ...graph, nodes: updatedNodes });
+        }}
+      />
+
+      {/* Personalized Weekly Action Plan Modal */}
+      <WeeklyActionPlanModal
+        isOpen={isWeeklyPlanOpen}
+        onClose={() => setIsWeeklyPlanOpen(false)}
+        graph={graph}
+      />
+
+      {/* Interactive Skill-Gap Analyzer Modal */}
+      <SkillGapAnalyzerModal
+        isOpen={isSkillGapOpen}
+        onClose={() => setIsSkillGapOpen(false)}
+        graph={graph}
+        onToggleNodeStatus={(nodeId) => {
+          const updatedNodes = graph.nodes.map((node) => {
+            if (node.id === nodeId) {
+              const newStatus = node.status === "completed" ? "unlocked" : "completed";
+              return { ...node, status: newStatus as RoadmapNodeData["status"] };
+            }
+            return node;
+          });
+
+          const completedIds = new Set(
+            updatedNodes.filter((n) => n.status === "completed").map((n) => n.id)
+          );
+
+          const recalibratedNodes = updatedNodes.map((node) => {
+            if (node.status === "completed") return node;
+            const allPrereqsDone =
+              node.prerequisites.length === 0 ||
+              node.prerequisites.every((prereqId) => completedIds.has(prereqId));
+
+            return {
+              ...node,
+              status: (allPrereqsDone ? "unlocked" : "locked") as RoadmapNodeData["status"],
+            };
+          });
+
+          setGraph({ ...graph, nodes: recalibratedNodes });
         }}
       />
     </main>
