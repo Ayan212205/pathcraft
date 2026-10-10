@@ -25,6 +25,8 @@ PathCraft reverse-engineers a student's hyper-specific dream job (such as *"Full
   - Interactive Interview Readiness Scorecard: self-assessment tracking for technical drills.
   - 100% Roadmap Mastery Celebration: fireworks confetti burst, honors certification, and staff-level skill expansion.
   - AI ATS Resume Auditor & Role Alignment Engine: evaluates full resume uploads, calculates an ATS match score (0-100), detects matched vs missing keywords, rewrites weak bullet points, and maps missing skills directly to the visual skill tree.
+  - Personalized Weekly Action Plan: custom schedules based on skill level (Beginner/Intermediate/Advanced), available hours, and target deadline with daily tasks and Sunday milestone deliverables.
+  - Interactive Skill-Gap Analyzer: visual categorized breakdown of Mastered, In-Progress, and Missing skills with live bidirectional synchronization with the React Flow canvas.
   - Built-in resilient fallbacks ensuring zero crashes during live judging demos.
 
 - **Left (Next 16 Hours)**:
@@ -74,6 +76,8 @@ Dynamic Prerequisite Re-routing Engine (<NodeDetailDrawer />)
 6. **Dual Orientation Toggle**: Switch between Horizontal ("Left-to-Right progression tree") and Vertical ("Timeline mind-map") with one click.
 7. **AI ATS Resume Auditor & Alignment Meter**: Upload a full resume document or text to receive an objective ATS compatibility score (0-100), detected vs missing keywords, bullet point rewrites, and 1-click mapping of missing skills directly onto the visual skill tree.
 8. **100% Mastery Honors & Fireworks Experience**: Celebrates completed paths with fireworks confetti, verified portfolio badges, staff-level skill expansion, and pivot transfer insights.
+9. **Personalized Weekly Action Plan Generator**: Turns abstract long-term goals into realistic weekly sprints with daily learning tasks and Sunday milestone deliverables based on current skill level and available hours.
+10. **Interactive Skill-Gap Analyzer**: Categorizes all required competencies into Mastered, In-Progress, and Missing, with interactive checkboxes that live-sync with the React Flow canvas.
 
 ---
 
