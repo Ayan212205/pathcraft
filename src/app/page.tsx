@@ -5,6 +5,7 @@ import { RoadmapCanvas } from "@/components/roadmap/RoadmapCanvas";
 import { ResumeScannerModal } from "@/components/roadmap/ResumeScannerModal";
 import { RoleComparisonModal } from "@/components/roadmap/RoleComparisonModal";
 import { RoadmapCompletionModal } from "@/components/roadmap/RoadmapCompletionModal";
+import { AtsResumeAuditorModal } from "@/components/roadmap/AtsResumeAuditorModal";
 import { sampleRoadmaps } from "@/lib/mock-data";
 import { RoadmapGraph, RoadmapNodeData } from "@/types/roadmap";
 import {
@@ -22,6 +23,7 @@ import {
   AlertCircle,
   GitCompare,
   PartyPopper,
+  FileCheck,
 } from "lucide-react";
 
 export default function Home() {
@@ -32,6 +34,7 @@ export default function Home() {
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+  const [isAtsModalOpen, setIsAtsModalOpen] = useState(false);
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -314,6 +317,13 @@ export default function Home() {
           {/* Innovation Action Buttons */}
           <div className="flex items-center gap-2 justify-end flex-wrap">
             <button
+              onClick={() => setIsAtsModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <FileCheck className="w-3.5 h-3.5 text-cyan-400" />
+              ATS Auditor
+            </button>
+            <button
               onClick={() => setIsCompareModalOpen(true)}
               className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
             >
@@ -402,6 +412,28 @@ export default function Home() {
           window.scrollTo({ top: 0, behavior: "smooth" });
           const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
           if (searchInput) searchInput.focus();
+        }}
+      />
+
+      {/* AI ATS Resume Auditor Modal */}
+      <AtsResumeAuditorModal
+        isOpen={isAtsModalOpen}
+        onClose={() => setIsAtsModalOpen(false)}
+        targetRole={graph.metadata.targetRole}
+        onApplyMissingSkills={(missingKeywords) => {
+          // Focus the missing skills on the roadmap
+          const updatedNodes = graph.nodes.map((node) => {
+            const hasMatch = missingKeywords.some((kw) =>
+              `${node.title} ${node.summary} ${node.actionable.skillsLearned.join(" ")}`
+                .toLowerCase()
+                .includes(kw.toLowerCase())
+            );
+            if (hasMatch && node.status === "locked") {
+              return { ...node, status: "unlocked" as RoadmapNodeData["status"] };
+            }
+            return node;
+          });
+          setGraph({ ...graph, nodes: updatedNodes });
         }}
       />
     </main>
