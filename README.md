@@ -23,6 +23,8 @@ PathCraft reverse-engineers a student's hyper-specific dream job (such as *"Full
   - 1-Click High-Resolution PNG Canvas Export (`html-to-image`).
   - "Fork in the Road" Dual-Role Comparison Engine: side-by-side analysis of overlapping foundational skills vs diverging specializations.
   - Interactive Interview Readiness Scorecard: self-assessment tracking for technical drills.
+  - 100% Roadmap Mastery Celebration: fireworks confetti burst, honors certification, and staff-level skill expansion.
+  - AI ATS Resume Auditor & Role Alignment Engine: evaluates full resume uploads, calculates an ATS match score (0-100), detects matched vs missing keywords, rewrites weak bullet points, and maps missing skills directly to the visual skill tree.
   - Built-in resilient fallbacks ensuring zero crashes during live judging demos.
 
 - **Left (Next 16 Hours)**:
@@ -70,6 +72,8 @@ Dynamic Prerequisite Re-routing Engine (<NodeDetailDrawer />)
 4. **1-Click High-Res Canvas Export**: Instant PNG snapshot download for offline review or portfolio sharing.
 5. **Dynamic Time-Budget Slider**: Students set their weekly availability (4 to 40 hrs/week). The platform recalculates the exact week-by-week timeline and prioritizes high-ROI weekend projects.
 6. **Dual Orientation Toggle**: Switch between Horizontal ("Left-to-Right progression tree") and Vertical ("Timeline mind-map") with one click.
+7. **AI ATS Resume Auditor & Alignment Meter**: Upload a full resume document or text to receive an objective ATS compatibility score (0-100), detected vs missing keywords, bullet point rewrites, and 1-click mapping of missing skills directly onto the visual skill tree.
+8. **100% Mastery Honors & Fireworks Experience**: Celebrates completed paths with fireworks confetti, verified portfolio badges, staff-level skill expansion, and pivot transfer insights.
 
 ---
 
