@@ -21,7 +21,8 @@ import { RoadmapGraph, RoadmapNodeData } from "@/types/roadmap";
 import { RoadmapNode } from "./RoadmapNode";
 import { NodeDetailDrawer } from "./NodeDetailDrawer";
 import { getLayoutedElements } from "@/lib/layout";
-import { RotateCw, Compass } from "lucide-react";
+import { RotateCw, Compass, Download, Camera } from "lucide-react";
+import { toPng } from "html-to-image";
 
 const nodeTypes = {
   roadmapNode: RoadmapNode,
@@ -152,6 +153,32 @@ export const RoadmapCanvas: React.FC<RoadmapCanvasProps> = ({
     setDirection((prev) => (prev === "LR" ? "TB" : "LR"));
   };
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportPng = useCallback(() => {
+    const viewportElement = document.querySelector(".react-flow__viewport") as HTMLElement;
+    if (!viewportElement) return;
+
+    setExporting(true);
+    toPng(viewportElement, {
+      backgroundColor: "#020617",
+      quality: 0.95,
+      pixelRatio: 2,
+    })
+      .then((dataUrl) => {
+        const link = document.createElement("a");
+        link.download = `${graph.metadata.targetRole.toLowerCase().replace(/[^a-z0-9]/g, "-")}-roadmap.png`;
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => {
+        console.error("Export PNG failed:", err);
+      })
+      .finally(() => {
+        setExporting(false);
+      });
+  }, [graph.metadata.targetRole]);
+
   return (
     <div className="relative w-full h-[680px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950/80 shadow-2xl">
       {/* Top Bar inside canvas */}
@@ -162,6 +189,15 @@ export const RoadmapCanvas: React.FC<RoadmapCanvasProps> = ({
         >
           <RotateCw className="w-3.5 h-3.5 text-indigo-400" />
           Layout: {direction === "LR" ? "Horizontal" : "Vertical"}
+        </button>
+
+        <button
+          onClick={handleExportPng}
+          disabled={exporting}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors font-medium disabled:opacity-50"
+        >
+          <Camera className="w-3.5 h-3.5 text-emerald-400" />
+          {exporting ? "Exporting..." : "Save Image"}
         </button>
 
         <span className="text-slate-600">|</span>
